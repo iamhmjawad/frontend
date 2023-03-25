@@ -1,28 +1,35 @@
-// Importing necessary dependencies and styles
+// Importing necessary dependencies and components
 import { Card, Button } from 'react-bootstrap'
 import '../styles/style.css'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import axios from 'axios'
+import { useLocation } from 'react-router-dom'
 
 function SocialMediaPost() {
-  // Setting up states using useState hooks
+  // Using the useLocation hook to retrieve data passed from the previous page
+  const location = useLocation()
+  const data = location.state
+
+  // Setting up state variables
   const [userprofile, setUserprofile] = useState(0)
-  const [items, setItems] = useState([])
+  const [name, setName] = useState('')
   const [imageUrl, setImageUrl] = useState([])
   const [posts, setPosts] = useState([])
+  const [items, setItems] = useState([])
 
-  // Fetching user data using useEffect hook
+  // useEffect hook to fetch data from the server and update state variables
   useEffect(() => {
-    // Retrieving data from local storage
+    // Retrieving items from localStorage
     const items = JSON.parse(localStorage.getItem('items'))
     if (items) {
       setItems(items)
     }
-    // Fetching user data from API
+    // Fetching user profile data and posts from the server
     axios
-      .get('http://localhost:5000/user/' + items.id)
+      .get('http://localhost:5000/user/' + data.fid)
       .then((response) => {
+        console.log(response.data)
         setUserprofile(response.data)
         setPosts(response.data.posts)
       })
@@ -31,20 +38,18 @@ function SocialMediaPost() {
       })
   }, [])
 
-  // Generating relative URLs for images
+  // Extracting image URLs from the posts and creating an array of image names and relative URLs
   const imageUrls = posts.map((post) => post.image_url)
   let imageName = imageUrls.map((url) => url.split('\\').pop())
   let relativeUrls = imageName.map(
     (name) => process.env.PUBLIC_URL + '/images/' + name
   )
 
-  // Render the component JSX
   return (
-    // Use Bootstrap classes for layout
     <div className='d-flex justify-content-center my-5'>
       <Card className='mx-auto ' style={{ width: '65rem' }}>
         <Card.Body>
-          {/* Display the user's profile picture and name */}
+          {/* User profile info section */}
           <div
             className='mt-2'
             style={{ display: 'flex', alignItems: 'center' }}
@@ -59,22 +64,20 @@ function SocialMediaPost() {
                 marginRight: '10px',
               }}
             />
-            <h5>{items.name}</h5>
-          </div>
-          {/* Display the user's photo count and friend count */}
-          <div className='d-flex justify-content-center'>
-            <h3 className='px-3 text'>
-              Photo Count: {userprofile.posts_count}
-            </h3>
-            <h3 className='px-3'>Friends Count: {userprofile.friends_count}</h3>
+            <h5>{userprofile ? userprofile.user.name : 'Loading'}</h5>
           </div>
 
-          {/* Display the user's photos */}
+          {/* User profile stats section */}
+          <div className='d-flex justify-content-center'>
+            <h3 className='px-3 text'>Photo Count:{userprofile.posts_count}</h3>
+            <h3 className='px-3'>Friends Count:{userprofile.friends_count}</h3>
+          </div>
+
+          {/* User profile photos section */}
           <section className='mt-3'>
             <div className='row'>
-              {/* Check if there are any posts */}
+              {/* Render all the user's posts as photo cards */}
               {posts.length > 0 ? (
-                // If there are posts, map through them and display them
                 posts.map((post) => (
                   <div className='col-lg-4 mb-4 mb-lg-0  mt-3'>
                     <div className='bg-image hover-overlay ripple shadow-1-strong rounded'>
@@ -83,6 +86,7 @@ function SocialMediaPost() {
                         alt=''
                         className='w-100'
                       />
+                      {/* Display a modal when a photo is clicked */}
                       <a
                         href='#!'
                         data-mdb-toggle='modal'
@@ -99,7 +103,6 @@ function SocialMediaPost() {
                   </div>
                 ))
               ) : (
-                // If there are no posts, display nothing
                 <div></div>
               )}
             </div>

@@ -1,44 +1,78 @@
+// Importing necessary dependencies from react-bootstrap and react-router-dom
 import React, { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import Container from 'react-bootstrap/Container'
 import Nav from 'react-bootstrap/Nav'
 import Navbar from 'react-bootstrap/Navbar'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import Button from 'react-bootstrap/Button'
 import Offcanvas from 'react-bootstrap/Offcanvas'
+
+// Importing the logo and CSS styles
 import logo from '../assets/logo.png'
 import '../styles/style.css'
-// import '../styles/style.css'
 
-function ColorSchemesExample() {
+function NavbarPage() {
+  // Defining states and state update functions using the useState hook
   const [show, setShow] = useState(false)
 
+  // Defining functions to handle offcanvas menu visibility
   const handleClose = () => setShow(false)
   const handleShow = () => setShow(true)
 
+  // Getting the current location using the useLocation hook from react-router-dom
+  const location = useLocation()
+
+  // Checking the current location to determine which page is being displayed
+  const isLoginPage = location.pathname === '/login'
+  const isHomePage = location.pathname === '/'
+  const isSignupPage = location.pathname === '/signup'
+
+  // Defining a function to handle user logout
+  const handleLogout = () => {
+    window.location.href = '/' // Redirecting to the home page on logout
+  }
+
+  // This is a functional component that returns a navigation bar with an offcanvas
   return (
     <>
+      {/* Navbar with a dark background and a logo */}
       <Navbar bg='dark' variant='dark' className=''>
         <Container className='justify-content-space-between'>
-          {/* <Navbar.Brand href='/'> */}
-          <Navbar.Brand as={NavLink} to='/'>
+          {/* The logo and the name of the app */}
+          {/* This will navigate to home if the current page is not the login or signup page, otherwise it will navigate to "#" */}
+          <Navbar.Brand
+            as={NavLink}
+            to={!isLoginPage && !isSignupPage && !isHomePage ? 'home' : '#'}
+          >
             <img
               alt=''
               src={logo}
-              // width='30'
               height='50'
               className=' d-inline-block align-top'
-            />{' '}
+            />
             BlueSpace
-          </Navbar.Brand>{' '}
-          <Nav>
-            <Button variant='outline-success' onClick={handleShow}>
-              SideBar
-            </Button>
-          </Nav>
+          </Navbar.Brand>
+
+          {/* If not on the login, signup or home page, display the Options and Logout buttons */}
+          {!isLoginPage && !isSignupPage && !isHomePage && (
+            <Nav>
+              <Button variant='primary' onClick={handleShow}>
+                Options
+              </Button>
+              <Button
+                variant='outline-success'
+                className='mx-3 text-white'
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </Nav>
+          )}
         </Container>
       </Navbar>
 
+      {/* Offcanvas menu that appears when the Options button is clicked */}
       <Offcanvas
         placement='end'
         show={show}
@@ -49,12 +83,14 @@ function ColorSchemesExample() {
           <Offcanvas.Title>Offcanvas</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
+          {/* Vertical navigation bar in the offcanvas */}
           <Nav className='flex-column'>
+            {/* Links to the different pages, which navigate to the page and close the offcanvas */}
             <Nav.Item>
               <NavLink
-                to='/'
+                to='/home'
                 className='nav-link'
-                onClick={() => setShow(false)} // to dissapear offcanvas
+                onClick={() => setShow(false)} // to disappear offcanvas
               >
                 Home
               </NavLink>
@@ -63,16 +99,16 @@ function ColorSchemesExample() {
               <NavLink
                 to='/friends'
                 className='nav-link'
-                onClick={() => setShow(false)} // to dissapear offcanvas
+                onClick={() => setShow(false)} // to disappear offcanvas
               >
-                Friends
+                Discover
               </NavLink>
             </Nav.Item>
             <Nav.Item>
               <NavLink
                 to='/profile'
                 className='nav-link'
-                onClick={() => setShow(false)} // to dissapear offcanvas
+                onClick={() => setShow(false)} // to disappear offcanvas
               >
                 Profile
               </NavLink>
@@ -81,16 +117,16 @@ function ColorSchemesExample() {
               <NavLink
                 to='/discover'
                 className='nav-link'
-                onClick={() => setShow(false)} // to dissapear offcanvas
+                onClick={() => setShow(false)} // to disappear offcanvas
               >
-                Discover
+                Friend
               </NavLink>
             </Nav.Item>
             <Nav.Item>
               <NavLink
                 to='/messanger'
                 className='nav-link'
-                onClick={() => setShow(false)} // to dissapear offcanvas
+                onClick={() => setShow(false)} // to disappear offcanvas
               >
                 Messanger
               </NavLink>
@@ -99,7 +135,7 @@ function ColorSchemesExample() {
               <NavLink
                 to='/upload'
                 className='nav-link'
-                onClick={() => setShow(false)} // to dissapear offcanvas
+                onClick={() => setShow(false)} // to disappear offcanvas
               >
                 Add
               </NavLink>
@@ -111,4 +147,4 @@ function ColorSchemesExample() {
   )
 }
 
-export default ColorSchemesExample
+export default NavbarPage

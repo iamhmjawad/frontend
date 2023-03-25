@@ -1,63 +1,82 @@
-import React, { useState } from 'react'
-import { Card, Button, Form } from 'react-bootstrap'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { Navigate } from 'react-router-dom'
+import { Container, Form, Button } from 'react-bootstrap'
 
 const UploadImage = () => {
-  const [selectedFile, setSelectedFile] = useState(null)
+  const [items, setItems] = useState({ id: '' })
+  const [image, setImage] = useState(null)
   const [caption, setCaption] = useState('')
+  const [isUploadSuccess, setIsUploadSuccess] = useState(false)
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0])
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0])
   }
 
-  const handleCaptionChange = (event) => {
-    setCaption(event.target.value)
+  const handleCaptionChange = (e) => {
+    setCaption(e.target.value)
   }
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    // Upload image and caption to server
-    console.log(selectedFile, caption)
+  // to get the id of the user
+  useEffect(() => {
+    const items = JSON.parse(localStorage.getItem('items'))
+    if (items) {
+      setItems(items)
+    }
+  }, [])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const formData = new FormData()
+    formData.append('image', image)
+    formData.append('caption', caption)
+
+    try {
+      const res = await axios.post(
+        `http://localhost:5000/user/${items.id}/post`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+      console.log(res.data)
+      setIsUploadSuccess(true) // set isUploadSuccess to true after successful upload
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  // redirect to home page after successful upload
+  if (isUploadSuccess) {
+    return <Navigate to='/home' />
   }
 
   return (
-    <Card style={{ height: '88vh' }}>
-      <Card.Body className='d-flex flex-column justify-content-center align-items-center'>
-        {selectedFile ? (
-          <img
-            src={URL.createObjectURL(selectedFile)}
-            alt='Selected'
-            className='img-fluid mb-3'
+    <Container
+      className='d-flex justify-content-center align-items-center'
+      style={{ height: '80vh' }}
+    >
+      <Form onSubmit={handleSubmit}>
+        <Form.Group>
+          <Form.Label htmlFor='image'>Upload Image:</Form.Label>
+          <Form.Control type='file' id='image' onChange={handleImageChange} />
+        </Form.Group>
+        <Form.Group>
+          <Form.Label htmlFor='caption'>Caption:</Form.Label>
+          <Form.Control
+            type='text'
+            id='caption'
+            value={caption}
+            onChange={handleCaptionChange}
           />
-        ) : (
-          <Button
-            variant='primary'
-            className='mb-3'
-            onClick={() => document.getElementById('upload-file-input').click()}
-          >
-            Upload Image
-          </Button>
-        )}
-        <Form onSubmit={handleSubmit} className='d-flex'>
-          <Form.Group controlId='caption'>
-            <Form.Control
-              type='text'
-              placeholder='Caption'
-              value={caption}
-              onChange={handleCaptionChange}
-            />
-          </Form.Group>
-          <Button variant='primary' type='submit' className='mx-3'>
-            Add Caption
-          </Button>
-        </Form>
-        <input
-          type='file'
-          id='upload-file-input'
-          onChange={handleFileChange}
-          className='d-none'
-        />
-      </Card.Body>
-    </Card>
+        </Form.Group>
+        <Button variant='primary' type='submit' className='mt-3'>
+          Submit
+        </Button>
+      </Form>
+    </Container>
   )
 }
 
